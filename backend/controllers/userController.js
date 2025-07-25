@@ -165,7 +165,7 @@ async function forgotPassword(req, res) {
   const user = await User.findOne({ email });
   if (!user) return res.status(404).json({ message: 'No user found.' });
   const resetToken = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '15m' });
-  const resetLink = `http://localhost:3000/resetpassword?token=${resetToken}`;
+  const resetLink = `http://localhost:5173/resetpassword?token=${resetToken}`;
   await sendEmail(user.email, 'Password Reset', `<a href="${resetLink}">${resetLink}</a>`);
   res.status(200).json({ message: 'Reset link sent.' });
 }

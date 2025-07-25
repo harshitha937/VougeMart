@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+
+.landing-hero {
+  background: url('https://img.freepik.com/free-photo/top-view-desk-concept-with-copy-space_23-2148459498.jpg?semt=ais_hybrid&w=740')
+    no-repeat left center;  /* 👈 Focus left */
+  background-size: cover;    /* Fully covers screen */
+  background-attachment: fixed;
+  min-height: 100vh;
+  position: relative;
+}
+
+.landing-overlay {
+  position: absolute;
+  inset: 0;
+   background-size: cover;
+  background: rgba(0, 0, 0, 0.6); /* Dark overlay for readability */
+  z-index: 1;
+}
+
+.landing-hero > main {
+  position: relative;
+  z-index: 2; /* Content above overlay */
+}
