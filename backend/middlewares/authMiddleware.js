@@ -1,36 +1,43 @@
+// middlewares/authMiddleware.js
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
 const User = require('../models/userModel.js');
-async function authenticate(req, res, next) {
-  let token = req.cookies.jwt ;
-  const secreyKey =process.env.JWT_SECRET ||  'hshfu288290';
+
+const authenticate = async (req, res, next) => {
+  let token;
+
+  // ✅ Check for token in cookies first (for backend-only requests)
+  token = req.cookies.jwt;
+
+  // ✅ If no cookie, check Authorization header (for frontend requests)
+  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
   if (!token) {
-    return res.status(401).json({ error: "Not authorized, no token." });
+    return res.status(401).json({ message: 'Not authorized, no token' });
   }
 
   try {
-    const decoded = jwt.verify(token,secreyKey );
-    req.user = await User.findById(decoded.userId).select("-password");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await User.findById(decoded.userId).select('-password');
+    
     if (!req.user) {
-      return res.status(401).json({ error: "User not found." });
+      return res.status(401).json({ message: 'Not authorized, user not found' });
     }
+    
     next();
   } catch (error) {
-    return res.status(401).json({ error: "Not authorized, token failed." });
+    console.error('Token verification error:', error);
+    res.status(401).json({ message: 'Not authorized, token failed' });
   }
-}
+};
 
-
-async function authorizeAdmin(req, res, next) {
-  if (req.user && req.user.isAdmin ) {
+const authorizeAdmin = (req, res, next) => {
+  if (req.user && req.user.isAdmin) {
     next();
   } else {
-    res.status(401).send("Not authorized as an admin.");
+    res.status(401).json({ message: 'Not authorized as an admin' });
   }
-}
-
-
-module.exports = {
-  authenticate,
-  authorizeAdmin,
 };
+
+module.exports = { authenticate, authorizeAdmin };

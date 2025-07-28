@@ -3,105 +3,141 @@ import {
   AiOutlineHome,
   AiOutlineLogin,
   AiOutlineUserAdd,
-  AiOutlineUnorderedList,
   AiOutlineMenu,
-  AiOutlineLike
+  AiOutlineShoppingCart,
+  AiOutlineUser,
+  AiOutlineLogout,
+  AiOutlineDashboard,
 } from 'react-icons/ai';
-import { Link } from 'react-router-dom';
+import { FaHeart, FaBoxOpen, FaUsers, FaList } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
 import { getUserDetails } from '../utils/GetUser';
+import AuthServices from '../services/AuthSevices';
 
 const Navigation = ({ active }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(
-    () => localStorage.getItem('theme') === 'dark'
-  );
-  const [user, setUser] = useState('');
+  const [isOpen, setIsOpen] = useState(true);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const userCredits = getUserDetails();
-    if (userCredits) {
-      setUser(userCredits);
-    }
-  }, []);
+  const updateUser = () => {
+    const userInfo = getUserDetails();
+    setUser(userInfo || null);
+  };
 
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [darkMode]);
+  updateUser(); // initial fetch
+
+  window.addEventListener('storage', updateUser); // 👈 listen
+
+  return () => {
+    window.removeEventListener('storage', updateUser); // cleanup
+  };
+}, []);
+
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleLike = () => {
-    alert('You liked this!');
-  };
+const handleLogout = async () => {
+  try {
+    await AuthServices.logoutUser();
+    localStorage.removeItem('userInfo');
+    setUser(null);
+    window.dispatchEvent(new Event('storage')); // still helpful for other tabs
+    setUser(null);
+    navigate('/login');
+  } catch (error) {
+    console.error('Logout failed:', error);
+  }
+};
+
 
   return (
-    <header className="fixed top-0 left-0 w-full bg-black dark:bg-gray-900 text-white z-50 shadow-md flex items-center justify-between px-4 h-[60px]">
-      <div className="flex items-center gap-4">
-        <button onClick={toggleSidebar} className="md:hidden">
+    <aside
+      className={`fixed top-0 left-0 h-screen bg-black text-white z-50 transition-all duration-300 flex flex-col justify-between ${
+        isOpen ? 'w-48' : 'w-16'
+      }`}
+    >
+      <div className="p-4">
+        <button onClick={toggleSidebar} className="mb-4">
           <AiOutlineMenu size={24} />
         </button>
-        <Link to="/" className="flex items-center gap-2 font-bold text-lg">
-          TaskApp
-        </Link>
+
+        <nav className="space-y-6">
+          <Link to="/" className={`flex items-center gap-3 px-2 py-2 rounded hover:bg-gray-800 ${active === 'home' ? 'bg-gray-700' : ''}`}>
+            <AiOutlineHome size={20} />
+            {isOpen && <span>Home</span>}
+          </Link>
+          <Link to="/favorite" className="flex items-center gap-3 px-2 py-2 rounded hover:bg-gray-800">
+            <FaHeart size={18} />
+            {isOpen && <span>Favorites</span>}
+          </Link>
+          <Link to="/products" className="flex items-center gap-3 px-2 py-2 rounded hover:bg-gray-800">
+            <AiOutlineShoppingCart size={20} />
+            {isOpen && <span>Products</span>}
+          </Link>
+          <Link to="/cart" className="flex items-center gap-3 px-2 py-2 rounded hover:bg-gray-800">
+  <AiOutlineShoppingCart size={20} />
+  {isOpen && <span>Cart</span>}
+</Link>
+
+          {user?.isAdmin ? (
+            <>
+              <Link to="/admin/dashboard" className="flex items-center gap-3 px-2 py-2 rounded hover:bg-gray-800">
+                <AiOutlineDashboard size={20} />
+                {isOpen && <span>Dashboard</span>}
+              </Link>
+              <Link to="/admin/categories" className="flex items-center gap-3 px-2 py-2 rounded hover:bg-gray-800">
+                <FaList size={18} />
+                {isOpen && <span>Categories</span>}
+              </Link>
+              <Link to="/admin/orders" className="flex items-center gap-3 px-2 py-2 rounded hover:bg-gray-800">
+                <FaBoxOpen size={18} />
+                {isOpen && <span>Orders</span>}
+              </Link>
+              <Link to="/admin/users" className="flex items-center gap-3 px-2 py-2 rounded hover:bg-gray-800">
+                <FaUsers size={18} />
+                {isOpen && <span>Users</span>}
+              </Link>
+            </>
+          ) : (
+            user?.username  && (
+              <Link to="/orders" className="flex items-center gap-3 px-2 py-2 rounded hover:bg-gray-800">
+                <FaBoxOpen size={18} />
+                {isOpen && <span>Orders</span>}
+              </Link>
+            )
+          )}
+        </nav>
       </div>
 
-      <nav
-        className={`${
-          isOpen ? 'block' : 'hidden'
-        } absolute md:static top-[60px] left-0 w-full md:w-auto bg-black dark:bg-gray-900 md:flex md:items-center md:gap-8 p-4 md:p-0`}
-      >
-        <ul className="flex flex-col md:flex-row md:items-center gap-6">
-          <li>
-            <Link
-              to="/"
-              className={`flex items-center gap-2 hover:text-gray-300 ${
-                active === 'home' ? 'text-blue-400' : ''
-              }`}
-            >
-              <AiOutlineHome size={20} /> Home
+      <div className="px-2 py-4 space-y-3 border-t border-gray-700">
+        {user?.username  ? (
+          <>
+            <Link to="/profile" className="flex items-center gap-3 px-2 py-2 rounded hover:bg-gray-800">
+              <AiOutlineUser size={20} />
+              {isOpen && <span>Profile</span>}
             </Link>
-          </li>
-         
-          <li>
-            <Link
-              to="/login"
-              className="flex items-center gap-2 hover:text-gray-300"
-            >
-              <AiOutlineLogin size={20} /> Login
+            <button onClick={handleLogout} className="flex items-center gap-3 px-2 py-2 w-full text-left rounded hover:bg-gray-800">
+              <AiOutlineLogout size={20} />
+              {isOpen && <span>Logout</span>}
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login" className="flex items-center gap-3 px-2 py-2 rounded hover:bg-gray-800">
+              <AiOutlineLogin size={20} />
+              {isOpen && <span>Login</span>}
             </Link>
-          </li>
-          <li>
-            <Link
-              to="/register"
-              className="flex items-center gap-2 hover:text-gray-300"
-            >
-              <AiOutlineUserAdd size={20} /> Register
+            <Link to="/register" className="flex items-center gap-3 px-2 py-2 rounded hover:bg-gray-800">
+              <AiOutlineUserAdd size={20} />
+              {isOpen && <span>Register</span>}
             </Link>
-          </li>
-
-          {user?.username && (
-            <li className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded">
-              Hi, {user.username}!
-              <button
-                onClick={handleLike}
-                className="hover:text-gray-200 ml-2"
-                title="Like"
-              >
-                <AiOutlineLike size={18} />
-              </button>
-            </li>
-          )}
-        </ul>
-      </nav>
-    </header>
+          </>
+        )}
+      </div>
+    </aside>
   );
 };
 

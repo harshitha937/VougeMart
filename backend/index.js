@@ -10,7 +10,7 @@ const  userRoutes = require('./routes/userRoutes.js');
 const categoryRoutes= require('./routes/categoryRoutes.js');
 const productRoutes=require('./routes/productRoutes.js');
 const Category = require("./models/categoryModel.js");
-const orderRoutes = require('./Routes/orderRoutes.js');
+const orderRoutes = require('./routes/orderRoutes.js');
 
 
 require('dotenv').config();
@@ -20,7 +20,10 @@ connectDB();
 
 const app =express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());

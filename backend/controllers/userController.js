@@ -1,4 +1,4 @@
-// ✅ Updated controller with roles removed, using isAdmin boolean from user model
+// ✅ Updated controller with proper token response
 
 const User = require('../models/userModel.js');
 const jwt = require('jsonwebtoken');
@@ -77,19 +77,28 @@ async function verifyEmail(req, res) {
   }
 }
 
+// ✅ Updated loginUser to return token in response
 async function loginUser(req, res) {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
   if (!user) return res.status(401).json({ message: 'Invalid credentials.' });
   const passwordValid = await bcrypt.compare(password, user.password);
   if (!passwordValid) return res.status(401).json({ message: 'Invalid credentials.' });
-  generateToken(res, user._id);
+  
+  // Generate token and set cookie
+  const token = generateToken(res, user._id);
+  
   await sendEmail(user.email, 'Login Successful', `<p>Hello ${user.username}, you logged in.</p>`);
+  
+  // ✅ Return token in response for frontend localStorage
   res.status(200).json({
     _id: user._id,
+    userId: user._id, // ✅ Added userId field
     username: user.username,
     email: user.email,
     isAdmin: user.isAdmin,
+    token: token, // ✅ Added token to response
+    message: 'Login successful'
   });
 }
 
