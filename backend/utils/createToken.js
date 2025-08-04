@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 
 const generateToken = (res, userId) => {
  
-  const token = jwt.sign({ userId }, process.env.JWT_SECRET ||'hshfu288290' , {
+  const token = jwt.sign({ userId }, process.env.JWT_SECRET , {
     expiresIn: '30d',
   });
  console.log("JWT_SECRET:", process.env.JWT_SECRET); // Should not be undefined

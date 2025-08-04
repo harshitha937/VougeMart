@@ -8,7 +8,7 @@ const sendEmail = require('../utils/sendEmail');
 const generateToken = require('../utils/createToken.js');
 require('dotenv').config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'hshfu288290';
+const JWT_SECRET = process.env.JWT_SECRET ;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 async function isEmailDomainValid(email) {
