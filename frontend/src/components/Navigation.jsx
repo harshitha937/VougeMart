@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   AiOutlineHome,
@@ -15,18 +15,15 @@ import { FaHeart } from 'react-icons/fa';
 import { logoutUser } from '../services/authService';
 import { message } from 'antd';
 
-const Navigation = () => {
-  const [collapsed, setCollapsed] = useState(false);
+const Navigation = ({ collapsed, setCollapsed }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     const authStatus = localStorage.getItem('isAuthenticated') === 'true';
     const adminStatus = localStorage.getItem('isAdmin') === 'true';
-
     setIsAuthenticated(authStatus);
     setIsAdmin(adminStatus);
   }, [location]);
@@ -92,32 +89,39 @@ const Navigation = () => {
       <nav className="mt-4 space-y-1">
         {navItems.map((item, index) => {
           const active = isActive(item.to);
+          const itemClasses = `
+            group flex items-center gap-4 px-5 py-3 transition-all duration-200 
+            ${active ? 'bg-fuchsia-800/80 text-white shadow-inner shadow-fuchsia-500/30' : 'hover:bg-fuchsia-700/50'} 
+            ${collapsed ? 'justify-center' : ''}
+            cursor-pointer rounded-lg mx-2
+          `;
+
+          // 🔹 Logout item (has action)
+          if (item.action) {
+            return (
+              <div
+                key={index}
+                className={itemClasses}
+                onClick={item.action}
+              >
+                <span className="text-xl text-fuchsia-400">{item.icon}</span>
+                {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
+              </div>
+            );
+          }
+
+          // 🔹 Normal navigation item
           return (
-            <div
+            <Link
               key={index}
-              className={`group flex items-center gap-4 px-5 py-3 transition-all duration-200 
-                ${active ? 'bg-fuchsia-800/80 text-white shadow-inner shadow-fuchsia-500/30' : 'hover:bg-fuchsia-700/50'} 
-                ${collapsed ? 'justify-center' : ''}
-                cursor-pointer rounded-lg mx-2`}
-              onClick={item.action ? item.action : null}
+              to={item.to}
+              className={itemClasses}
             >
-              {item.to !== '#' ? (
-                <Link
-                  to={item.to}
-                  className="flex items-center gap-4 w-full text-white group-hover:text-white"
-                >
-                  <span className={`text-xl ${active ? 'text-rose-300' : 'text-fuchsia-400'}`}>
-                    {item.icon}
-                  </span>
-                  {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
-                </Link>
-              ) : (
-                <>
-                  <span className="text-xl text-fuchsia-400">{item.icon}</span>
-                  {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
-                </>
-              )}
-            </div>
+              <span className={`text-xl ${active ? 'text-rose-300' : 'text-fuchsia-400'}`}>
+                {item.icon}
+              </span>
+              {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
+            </Link>
           );
         })}
       </nav>

@@ -14,11 +14,14 @@ const connectDB=require('./config/db');
 connectDB();
 
 const app =express();
-
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: [
+    'http://localhost:5173',
+    'https://vougemart.vercel.app'   // frontend deployed URL
+  ],
   credentials: true
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
@@ -27,8 +30,11 @@ app.use('/auth',useRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/product',producRoutes);
 app.use('/order',orderRoutes);
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+app.get('/', (req, res) => {
+  res.send('Backend is running successfully!');
+});
 
  app.listen(PORT,()=>{
     console.log(`Server is listening at ${PORT}.`);

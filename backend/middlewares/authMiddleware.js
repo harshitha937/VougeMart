@@ -27,10 +27,14 @@ const authenticate = async (req, res, next) => {
     }
     
     next();
-  } catch (error) {
-    console.error('Token verification error:', error);
-    res.status(401).json({ message: 'Not authorized, token failed' });
+} catch (error) {
+  if (error.name === 'TokenExpiredError') {
+    console.warn('⏰ JWT expired. Please log in again.');
+    return res.status(401).json({ message: 'Token expired, please log in again.' });
   }
+  console.error('Token verification error:', error);
+  res.status(401).json({ message: 'Not authorized, token failed.' });
+}
 };
 
 const authorizeAdmin = (req, res, next) => {

@@ -41,11 +41,16 @@ const Cart = () => {
       dataIndex: 'title',
       render: (_, record) => (
         <div className="flex items-center gap-4">
-          <img
-            src={record.image || '/placeholder.png'}
-            alt={record.title}
-            className="w-16 h-16 object-cover rounded shadow"
-          />
+<img
+  src={
+    record.image?.startsWith('http')
+      ? record.image
+      : `http://localhost:5000/uploads/${record.image}`
+  }
+  alt={record.title}
+  className="w-16 h-16 object-cover rounded shadow"
+/>
+
           <span className="text-white font-medium">{record.title}</span>
         </div>
       ),
